@@ -5,7 +5,7 @@ app.use(express.json());
 
 const VERIFY_TOKEN = "mwr123";
 
-// webhook verification
+// webhook verification (Meta checks this)
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
@@ -18,15 +18,16 @@ app.get("/webhook", (req, res) => {
   res.sendStatus(403);
 });
 
-// RECEIVE MESSAGES
+// RECEIVE MESSAGES (THIS IS THE IMPORTANT PART)
 app.post("/webhook", (req, res) => {
   console.log("🔥 WEBHOOK HIT:");
   console.log(JSON.stringify(req.body, null, 2));
 
-  res.sendStatus(200);
+  // IMPORTANT: acknowledge Meta
+  res.status(200).send("EVENT_RECEIVED");
 });
 
-// health check (VERY IMPORTANT)
+// health check
 app.get("/", (req, res) => {
   res.send("MWR Bot is running");
 });
