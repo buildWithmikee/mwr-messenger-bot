@@ -25,7 +25,7 @@ app.get("/webhook", (req, res) => {
 });
 
 // =========================
-// SEND MESSAGE FUNCTION
+// SEND MESSAGE
 // =========================
 async function sendMessage(senderId, text) {
   try {
@@ -47,7 +47,7 @@ async function sendMessage(senderId, text) {
 }
 
 // =========================
-// AI FUNCTION (GROQ)
+// AI FUNCTION (IMPROVED TAGLISH)
 // =========================
 async function getAIResponse(userText) {
   try {
@@ -61,15 +61,24 @@ async function getAIResponse(userText) {
             content: `
 You are a customer service representative for MWR Frozen Supply in the Philippines.
 
-Personality:
-- Simple, clear Taglish
-- Professional but friendly
+VERY IMPORTANT RULES:
+- Always reply in Taglish (Filipino + English mix)
+- NEVER use pure English
+- Simple, natural Pinoy CSR tone
+- Short answers only (1–3 sentences)
+- Friendly, helpful, professional
 - Not too salesy
-- Helpful CSR tone
 
-Goal:
-Help customers with orders and inquiries.
-Keep answers short (1–3 sentences).
+Behavior:
+- If customer asks price → ask what product first
+- If customer asks delivery → ask location
+- If unclear → ask follow-up question
+- Focus on helping customer order smoothly
+
+Example tone:
+"Hi 😊 ano pong product ang need nyo?"
+"Okay po 😊 ilang packs po?"
+"Sure po 😊 saan po location nyo?"
             `
           },
           {
@@ -86,15 +95,22 @@ Keep answers short (1–3 sentences).
       }
     );
 
-    return response.data.choices[0].message.content;
+    let reply = response.data.choices[0].message.content;
+
+    // 🔥 SAFETY FILTER (extra Taglish enforcement)
+    reply = reply.replace(/How may I assist you/gi, "Hi 😊 paano ko kayo matutulungan");
+    reply = reply.replace(/I can help you/gi, "Matutulungan ko kayo");
+
+    return reply;
+
   } catch (err) {
     console.log("AI error:", err.response?.data || err.message);
-    return "Sorry 😊 may error po. Please try again.";
+    return "Hi 😊 pasensya na may konting error. Pakisubukan ulit.";
   }
 }
 
 // =========================
-// RECEIVE MESSAGES
+// WEBHOOK RECEIVE
 // =========================
 app.post("/webhook", (req, res) => {
   console.log("🔥 WEBHOOK HIT:");
@@ -115,13 +131,13 @@ app.post("/webhook", (req, res) => {
           reply = "Hi 😊 Welcome to MWR Frozen Supply! Ano pong kailangan nyo?";
         }
         else if (text.includes("price")) {
-          reply = "Ano pong product ang gusto nyo ng price?";
+          reply = "Hi 😊 ano pong product ang gusto nyo ma-check ang price?";
         }
         else if (text.includes("order")) {
-          reply = "Sige 😊 Ano pong item at ilang packs po?";
+          reply = "Sige 😊 ano pong item at ilang packs po?";
         }
         else if (text.includes("hotdog")) {
-          reply = "Hotdog available 😊 Ilang packs po ang kailangan nyo?";
+          reply = "Hotdog available 😊 ilang packs po ang kailangan nyo?";
         }
 
         // 🟢 AI FALLBACK
