@@ -1,13 +1,11 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-
 const app = express();
-app.use(bodyParser.json());
 
-// 🔑 SAME TOKEN ITO SA META
+app.use(express.json());
+
 const VERIFY_TOKEN = "mwr123";
 
-// 1. Webhook verification (Meta checks this)
+// Webhook verification
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
@@ -20,12 +18,14 @@ app.get("/webhook", (req, res) => {
   }
 });
 
-// 2. Receive messages
+// Receive messages
 app.post("/webhook", (req, res) => {
   console.log("New message:", JSON.stringify(req.body, null, 2));
   res.sendStatus(200);
 });
 
-// 3. Start server
+// Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Bot running on port " + PORT));
+app.listen(PORT, () => {
+  console.log("Bot running on port " + PORT);
+});
